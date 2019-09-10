@@ -20,5 +20,9 @@ given, only those tests will be done.  Several shortcut options make
 testing common combinations easier; see the SHORTCUT OPTIONS section
 below.
 
+## How to use it?
+```root# ./make-spelingwords```
+```root# ./igor -R yourdoc.md```
+
 ## Authors
 Warren Block ⟨wblock@FreeBSD.org⟩
