@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# run this after adding new words to spellingwords
+# duplicates are removed and the file is sorted
+# spellingwords.imp is produced to be pulled into igor
+
+FILE="spellingwords"
+
+cp ${FILE} ${FILE}.bak
+cat ${FILE} \
+| sed -e '/^$/d' \
+| tr "[:upper:]" "[:lower:]" \
+| sort \
+| uniq > ${FILE}.tmp \
+&& mv ${FILE}.tmp ${FILE}
+
+COUNT=`cat ${FILE} | wc -l`
+
+perl -0777 -e  'use Text::Wrap; $Text::Wrap::tabstop = 4; $Text::Wrap::columns = 105; $txt = <>; $txt = "\tfor my \$word (qw/ " . $txt . "/) {"; $txt =~ s/\n/ /g; print wrap("", "\t\t", $txt);' ${FILE} > ${FILE}.imp
+
+echo "resorted ${FILE},"${COUNT}" words"
+echo "generated import file for igor: ${FILE}.imp"

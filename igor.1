@@ -1,0 +1,333 @@
+.Dd September 2, 2015
+.Dt IGOR 1
+.Os
+.Sh NAME
+.Nm igor
+.Nd "automated proofreading for documentation files"
+.Sh SYNOPSIS
+.Nm
+.Fl h
+.Nm
+.Op Fl abcdefilmnoprstuvwxyzDERSWXZ
+.Op Fl C Ar linerange
+.Op Fl L Ar linelen
+.Op Fl V Ar VID
+.Op Ar file ...
+.Sh DESCRIPTION
+.Nm
+proofreads documentation files to detect problems.
+The goal is to make formatting and problem detection easier,
+allowing the writer to concentrate on the content.
+.Pp
+Some tests can be performed on all files, while others are specific to
+.Xr mdoc 7
+or DocBook files.
+.Nm
+uses
+.Xr file 1
+to detect a file's type and only runs the applicable tests on it.
+.Pp
+Files compressed with
+.Xr gzip 1
+or
+.Xr bzip 2
+are automatically decompressed.
+If multiple files are specified, filenames are displayed before each
+is analyzed.
+If no files are given, input is read from stdin.
+.Pp
+By default, all tests are performed.
+If options for individual tests are given, only those tests will
+be done.
+Several shortcut options make testing common combinations easier;
+see the
+.Sx "SHORTCUT OPTIONS"
+section below.
+.Sh HELP OPTIONS
+.Bl -tag -width "12345678"
+.It Fl h
+Show a usage summary and exit.
+.El
+.Sh DISPLAY FORMAT OPTIONS
+.Bl -tag -width "12345678"
+.It Fl R
+Produce output with ANSI color highlighting, to be used with the
+.Fl R
+option of
+.Xr less 1 .
+If
+.Fl R
+is not given,
+.Qq \&[
+and
+.Qq \&]
+are used to mark problem areas.
+.It Fl C Ar linerange
+Restrict output to a range of lines from the file being checked.
+Some tests process the entire file and will be silently skipped when
+.Fl C
+is used.
+.Ar linerange
+consists of start and end line numbers separated by a colon or dash.
+Start or end may be omitted:
+.Bl -tag -width 12n
+.It -C 1000-2000
+Show problems on lines 1000 to 2000 of the file.
+.It -C 1000:
+Show problems from line 1000 on.
+.It -C -2000
+Show problems up to line 2000.
+.El
+.It Fl v
+Be verbose with diagnostic and status messages.
+.It Fl V Ar VID
+Limit output to a specific VuXML vulnerability VID, or use
+the literal keyword
+.Dq latest
+to specify the most recent (first listed) vulnerability in the VuXML
+file.
+.It Fl X
+Produce Checkstyle XML output.
+This overrides
+.Fl R .
+.El
+.Sh SHORTCUT OPTIONS
+.Bl -tag -width "12345678"
+.It Fl D
+Do all
+.Xr mdoc 7
+tests but ignore the document date
+.Pq  \.Dd .
+Use this option to skip needless warnings about the document date
+while a man page is being revised.
+When ready for the actual commit, run
+.Nm
+without this option to check the date.
+Equivalent to
+.Fl abefmrsuw .
+.It Fl z
+Run all applicable non-whitespace
+.Pq content
+tests on a document.
+Use this test to find content problems that will require retranslation
+of a document.
+.It Fl Z
+Run all applicable whitespace tests on a document.
+Use this to find whitespace-only problems that can be fixed without
+requiring retranslation of a document.
+.El
+.Sh TESTS FOR ALL FILE TYPES
+.Bl -tag -width indent
+.It Fl a
+Verify proper usage of abbreviations like
+.Qq e.g.
+and
+.Qq i.e. .
+.It Fl b
+Check for usage of bad phrases like
+.Qq equally as
+and some unfortunate contractions like
+.Qq gzip'd
+.Po the preferred form is
+.Qq gzipped
+for ASCII or
+.Xr mdoc 7 ,
+or
+.Qq <command>gzip</command>ped
+for DocBook.
+.Pc
+.It Fl f
+Check for mentions of obsolete
+.Fx
+features like
+.Qq cvsup .
+.It Fl r
+Check for repeated words like
+.Qq is is
+or
+.Qq and and .
+.It Fl s
+Detect spelling errors.
+This test looks for known misspellings found in existing
+.Fx
+documents.
+Additional files of misspelled words may be added with the
+.Ev IGORSPELLFILES
+environment variable, or placed in the
+.Pa /usr/local/etc/igor/spelling
+directory.
+The first word on each line, including apostrophes, will be included in the
+list of known misspellings to be checked.
+Blank lines and lines starting with a # character are ignored.
+The Debian project has a list of words at
+.Li http://anonscm.debian.org/gitweb/?p=lintian/lintian.git;a=blob_plain;f=vendors/debian/ftp-master-auto-reject/data/spelling/corrections;hb=HEAD
+.It Fl u
+Identify contractions, which make translation more difficult.
+.It Fl w
+Find general whitespace errors, including trailing whitespace at
+the end of lines, blank lines containing whitespace, and tabs
+following a space.
+.It Fl y
+Analyze and report on the writing style used in the document.
+This test is off by default.
+.El
+.Sh TESTS FOR MDOC(7) FILES
+.Bl -tag -width indent
+.It Fl d
+Check whether document date
+.Pq \.Dd
+has been set to today's date, as it should be when there have been
+nontrivial changes to a man page.
+.Po See the
+.Fl D
+option below.
+.Pc
+.It Fl e
+Verify that sentences start on a new line.
+.Xr mdoc 7
+does not enforce this, it is a style issue.
+.It Fl g
+Look for duplicated external references in the SEE ALSO section of a
+man page.
+.It Fl m
+Check for minimal
+.Xr mdoc 7
+document structure.
+.It Fl p
+Check for
+.Xr mdoc 7
+whitespace style, like no blank lines.
+.It Fl x
+Check for the existence of external references
+.Pq \.Xr .
+Due to a tendency for false positives with these tests,
+they are off by default.
+.El
+.Sh TESTS FOR DOCBOOK FILES
+.Bl -tag -width indent
+.It Fl c
+Check title capitalization against AP style rules.
+Portions of titles wrapped in tags like <filename> are ignored.
+.It Fl i
+Check indentation.
+.It Fl l
+Check for long lines.
+The default line length is 70 characters, the recommended value from
+the FDP Primer
+.Po see
+.Sx SEE ALSO
+below
+.Pc .
+The line length value may be overridden with
+.Fl L Ar linelen .
+.It Fl n
+Verify that sentences start with two spaces.
+.It Fl o
+Verify that open and close tags like <para> and </para> occur in
+matching pairs.
+.It Fl t
+Check for tag usage style problems, like using <programlisting>
+inside a <para>.
+.It Fl E
+Check for DocBook writing style problems, including redundant
+use of markup and text like
+.Bd -literal -offset indent
+Edit the <filename>/etc/rc.conf</filename> file.
+.Ed
+.Pp
+This can be expressed less redundantly as
+.Bd -literal -offset indent
+Edit <filename>/etc/rc.conf</filename>.
+.Ed
+.It Fl L
+Set the preferred line length
+.Po see
+.Fl l
+above.
+.Pc
+.It Fl S
+Check for
+.Qq straggler
+tags that are on the next line when they should be up against
+the content preceding them, or undesired whitespace before or
+after the content.
+Although this is whitespace, it is content, too.
+Any change of these spaces inside one of these tags is a
+content change that should also be changed in translations.
+Because of that, the straggler test is part of the content tests
+run with
+.Fl z
+rather than the whitespace tests.
+.It Fl W
+Test for DocBook-specific whitespace problems, including multiples
+of eight spaces at the start of a line which should be replaced
+with tabs, tabs hidden inside text, and odd numbers of spaces
+used for indentation.
+.El
+.Sh ENVIRONMENT
+.Bl -tag -width ".Ev IGORSPELLFILES"
+.It Ev IGORSPELLFILES
+A list of whitespace-delimited filenames containing additional misspelled
+words.
+.El
+.Sh FILES
+.Bl -tag -width /usr/local/etc/igor/spelling/
+.It Pa /usr/local/etc/igor/spelling/
+Directory for additional misspelled word files.
+.El
+.Sh EXAMPLES
+Check
+.Ar gpart.8.gz
+for all errors, showing them with ANSI highlights.
+.Bd -literal -offset indent
+igor -R gpart.8.gz | less -R -S
+.Ed
+.Pp
+Check
+.Ar tuning.7.gz
+for all
+.Xr mdoc 7
+errors except document date
+.Pq \.Dt ,
+then show a writing style analysis.
+.Bd -literal -offset indent
+igor -R -D -y /usr/share/man/man7/tuning.7.gz | less -RS
+.Ed
+.Pp
+Check a file from stdin, showing messages in plain text.
+.Bd -literal -offset indent
+cat README | igor -R
+.Ed
+.Pp
+Check a DocBook file for non-whitespace
+.Pq content
+errors.
+.Bd -literal -offset indent
+igor -Rz chapter.xml | less -RS
+.Ed
+.Pp
+Check the same DocBook file for only whitespace errors.
+.Bd -literal -offset indent
+igor -RZ chapter.xml | less -RS
+.Ed
+.Pp
+Check a file for all errors found on lines 829 through 1488.
+.Bd -literal -offset indent
+igor -R -C 829:1488 chapter.xml | less -RS
+.Ed
+.Pp
+Check all the English DocBook files.
+.Bd -literal -offset indent
+igor -R `find /usr/doc/en_US.ISO8859-1/ -name "*.xml"` | less -RS
+.Ed
+.Pp
+Check all the man pages in a directory, ignoring the document date.
+.Bd -literal -offset indent
+igor -RD /usr/share/man/man8/* | less -RS
+.Ed
+.Sh SEE ALSO
+The
+.%B FreeBSD Documentation Project Primer for New Contributors
+.Li http://www.freebsd.org/doc/en_US.ISO8859-1/books/fdp-primer/
+.Sh AUTHORS
+.An Warren Block Aq wblock@FreeBSD.org
