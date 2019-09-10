@@ -1,4 +1,4 @@
-# igor
+# igor (v.1.595)
 Automated proofreader for text files, man pages, and DocBook SGML
 source files.
 
