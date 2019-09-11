@@ -2,5 +2,5 @@
 
 IGOR_CMD="./igor"
 for file in `find $1 -type f -name "*".md`; do
-	./${IGOR_CMD} ${file}
+	./${IGOR_CMD} -R ${file}
 done
