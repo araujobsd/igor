@@ -7,7 +7,7 @@ igor proofreads documentation files to detect problems.  The goal is to
 make formatting and problem detection easier, allowing the writer to
 concentrate on the content.
 
-Some tests can be performed on all files, while others are specific to
+Some tests can run on all files, while others are specific to
 mdoc(7) or DocBook files.  igor uses file(1) to detect a file's type and
 only runs the applicable tests on it.
 
