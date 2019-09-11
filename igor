@@ -74,6 +74,10 @@ my ($bname, $type);
 
 my $prog = basename($0);
 
+# We need to be able to return 0 or 1 in case it finds any issue,
+# or otherwise in cases such as circleci it will never fail.
+$main::errorlevel = 0;
+
 sub usage {
 	$rev =~ /Revision: (\d+)/;
 	my $version = "1.$1";
@@ -429,6 +433,7 @@ sub showline {
 		print "source=\"$prog\"";
 		print "/>\n";
 	}
+	$main::errorlevel = 1;
 }
 
 sub is_lowercase {
@@ -2213,6 +2218,7 @@ foreach my $fname (@ARGV) {
 	}
 
 	removetempfiles();
+	exit $main::errorlevel;
 }
 
 if ( $opt_X ) {
