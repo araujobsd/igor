@@ -28,3 +28,7 @@ root# ./igor -R yourdoc.md
 
 ## Authors
 Warren Block ⟨wblock@FreeBSD.org⟩
+
+## Contributor
+Marcelo Araujo (araujo@FreeBSD.org)
+
